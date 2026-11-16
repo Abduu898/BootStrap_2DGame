@@ -1,11 +1,13 @@
 import java.util.Scanner;
 
 /**
- * Main game loop. Reads a direction, moves the player, and redraws the grid.
+ * Main game loop. Reads a direction, moves the player, resolves whatever
+ * is in the destination cell, and redraws the grid.
  */
 public class Game {
     private final Grid grid;
     private final Player player;
+    private final CombatManager combat = new CombatManager();
     private final Scanner sc = new Scanner(System.in);
 
     public Game(Grid grid, Player player) {
@@ -18,7 +20,7 @@ public class Game {
         System.out.println("8=up  2=down  4=left  6=right  0=quit");
 
         boolean running = true;
-        while (running) {
+        while (running && player.getHp() > 0) {
             grid.display(player);
             System.out.print("> ");
             int dir = sc.nextInt();
@@ -46,7 +48,19 @@ public class Game {
             }
 
             player.move(dx, dy);
+            resolveCell(grid.getCell(nx, ny));
+        }
+
+        if (player.getHp() <= 0) {
+            System.out.println("\n=== GAME OVER === You died.");
         }
         sc.close();
+    }
+
+    /** Applies combat to the cell the player just entered. */
+    private void resolveCell(Cell cell) {
+        if (cell.hasEnemies()) {
+            combat.fightAll(player, cell.getEnemies());
+        }
     }
 }
