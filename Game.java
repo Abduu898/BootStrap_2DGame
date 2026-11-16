@@ -9,18 +9,22 @@ public class Game {
     private final Player player;
     private final CombatManager combat = new CombatManager();
     private final Scanner sc = new Scanner(System.in);
+    private final int totalEnemies;
+    private int enemiesDefeated = 0;
 
-    public Game(Grid grid, Player player) {
+    public Game(Grid grid, Player player, int totalEnemies) {
         this.grid = grid;
         this.player = player;
+        this.totalEnemies = totalEnemies;
     }
 
     public void play() {
         System.out.println("=== GRID QUEST ===");
+        System.out.println("Defeat all " + totalEnemies + " enemies!");
         System.out.println("8=up  2=down  4=left  6=right  0=quit");
 
         boolean running = true;
-        while (running && player.getHp() > 0) {
+        while (running && player.getHp() > 0 && enemiesDefeated < totalEnemies) {
             grid.display(player);
             System.out.print("> ");
             int dir = sc.nextInt();
@@ -53,14 +57,21 @@ public class Game {
 
         if (player.getHp() <= 0) {
             System.out.println("\n=== GAME OVER === You died.");
+        } else if (enemiesDefeated >= totalEnemies) {
+            System.out.println("\n=== VICTORY === All enemies defeated!");
         }
         sc.close();
     }
 
-    /** Applies combat to the cell the player just entered. */
     private void resolveCell(Cell cell) {
         if (cell.hasEnemies()) {
-            combat.fightAll(player, cell.getEnemies());
+            int before = cell.getEnemies().size();
+            boolean survived = combat.fightAll(player, cell.getEnemies());
+            enemiesDefeated += before - cell.getEnemies().size();
+            if (!survived) return;
+        }
+        if (cell.hasItems()) {
+            combat.lootAll(player, cell.getItems());
         }
     }
 }

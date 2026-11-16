@@ -33,4 +33,10 @@ public class CombatManager {
         }
         return player.getHp() > 0;
     }
+
+    /** Applies every item in the list to the player, then clears it. */
+    public void lootAll(Player player, List<Item> items) {
+        for (Item item : items) item.apply(player);
+        items.clear();
+    }
 }
